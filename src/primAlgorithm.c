@@ -140,19 +140,54 @@ int stpPrim(int grafo[NUMNODOS][NUMNODOS]){
 	return EXIT_SUCCESS;
 }
 
+int readGrafo(int *grafo){
+
+	igraph_vector_t gVector;
+	igraph_t g;
+	FILE *ifile;
+	int numNodos;
+	ifile=fopen("/home/john/karate.gml", "r");
+	if (ifile==0) {
+		printf("Problema abriendo archivo de grafo\n");
+		return EXIT_FAILURE;
+	}
+	igraph_read_graph_gml(&g, ifile);
+	fclose(ifile);
+
+	numNodos = igraph_vcount(&g);
+	igraph_vector_init(&gVector,numNodos);
+
+
+	printf("Numero de nodos %d",numNodos);
+	return EXIT_SUCCESS;
+
+}
+
 int main(void) {
-	int grafo[6][6] = {0,3,1,6,INT_MAX,INT_MAX,3,0,5,INT_MAX,3,INT_MAX,1,5,0,5,6,4,6,INT_MAX,5,0,INT_MAX,2,INT_MAX,3,6,INT_MAX,0,6,INT_MAX,INT_MAX,4,2,6,0};
+
+	int *grafo;
+
+	//int grafo[6][6] = {0,3,1,6,INT_MAX,INT_MAX,3,0,5,INT_MAX,3,INT_MAX,1,5,0,5,6,4,6,INT_MAX,5,0,INT_MAX,2,INT_MAX,3,6,INT_MAX,0,6,INT_MAX,INT_MAX,4,2,6,0};
 	//int grafo[NUMNODOS][NUMNODOS] = {{INT_MAX,2,INT_MAX,INT_MAX,INT_MAX},
 						//{2,INT_MAX,3,2,10},
 						//{INT_MAX,3,INT_MAX,4,INT_MAX},
 						//{INT_MAX,2,4,INT_MAX,2},
 						//{INT_MAX,10,INT_MAX,2,INT_MAX}};
 
+
+	grafo = malloc(NUMNODOS*NUMNODOS*sizeof(int));
+
+	readGrafo(grafo);
+
+	//grafo = {0,3,1,6,INT_MAX,INT_MAX,3,0,5,INT_MAX,3,INT_MAX,1,5,0,5,6,4,6,INT_MAX,5,0,INT_MAX,2,INT_MAX,3,6,INT_MAX,0,6,INT_MAX,INT_MAX,4,2,6,0};
+
+
 	//int grafo2[6][6] = {0,3,1,6,0,0,3,0,5,0,3,0,1,5,0,5,6,4,6,0,5,0,0,2,0,3,6,0,0,6,0,0,4,2,6,0};
 
 
 	//initIgraph(grafo2);
-	stpPrim(grafo);
+	//stpPrim(grafo);
 
+	free(grafo);
 	return EXIT_SUCCESS;
 }
