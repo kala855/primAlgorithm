@@ -14,8 +14,10 @@
 #include <limits.h>
 #include <igraph.h>
 #include <stdarg.h>
+#include <string.h>
 
 #define NUMNODOS 6
+int numNodos = 0;
 
 int printMatrixAdj(int grafo[NUMNODOS][NUMNODOS]){
 	int i,j;
@@ -54,14 +56,14 @@ void print(igraph_t *g) {
   igraph_vector_destroy(&el);
 }
 
-int initIgraph(int m[NUMNODOS][NUMNODOS]){
+int initIgraph(int *m){
 
 	igraph_t g;
 	igraph_matrix_t mat;
 	long int i, j;
 
 	igraph_matrix_init(&mat, NUMNODOS, NUMNODOS);
-	for (i=0; i<NUMNODOS; i++) for (j=0; j<NUMNODOS; j++) MATRIX(mat, i, j) = m[i][j];
+	for (i=0; i<NUMNODOS; i++) for (j=0; j<NUMNODOS; j++) MATRIX(mat, i, j) = m[i+numNodos*j];
 	igraph_i_set_attribute_table(&igraph_cattribute_table);
 
 
@@ -69,9 +71,10 @@ int initIgraph(int m[NUMNODOS][NUMNODOS]){
 	print(&g);
 
 	FILE *stp;
-	stp = fopen("stp.gml", "w");
+	stp = fopen("/home/john/git/primAlgorithm/grafo2.gml", "w");
 	if (stp==0) {
-	   return EXIT_FAILURE;
+		printf("Problema abriendo archivo de grafo\n");
+		return EXIT_FAILURE;
 	}
 
 	igraph_write_graph_gml(&g, stp, 0, "gml Test");
@@ -81,16 +84,21 @@ int initIgraph(int m[NUMNODOS][NUMNODOS]){
 	return EXIT_SUCCESS;
 }
 
-int stpPrim(int grafo[NUMNODOS][NUMNODOS]){
-	int stp[NUMNODOS][NUMNODOS];
+int stpPrim(int *grafo){
+
+
+	int *stp;
+	stp = malloc(numNodos*numNodos*sizeof(int));
 	int min = INT_MAX;
 	int i=0,j,fila,columna;
-	for (i = 0; i < NUMNODOS; ++i)
-		for (j = 0; j < NUMNODOS; ++j)
-			stp[i][j] = INT_MAX;
+	for (i = 0; i < numNodos; ++i)
+		for (j = 0; j < numNodos; ++j)
+			stp[i+numNodos*j] = INT_MAX;
 
-	bool vector[NUMNODOS];
-	for (i = 0; i < NUMNODOS; ++i) {
+
+	bool *vector;
+	vector = malloc(numNodos*sizeof(bool));
+	for (i = 0; i < numNodos; ++i) {
 		vector[i] = false;
 	}
 	vector[0] = true;
@@ -100,10 +108,10 @@ int stpPrim(int grafo[NUMNODOS][NUMNODOS]){
 	int y = 0;
 	while(true){
 		if(vector[i]){
-			for (j = 0; j < NUMNODOS; ++j) {
+			for (j = 0; j < numNodos; ++j) {
 				if(!vector[j]){
-					if(grafo[i][j] < min){
-						min = grafo[i][j];
+					if(grafo[i+numNodos*j] < min){
+						min = grafo[i+numNodos*j];
 						fila = i;
 						columna = j;
 					}
@@ -113,8 +121,8 @@ int stpPrim(int grafo[NUMNODOS][NUMNODOS]){
 		i++;
 		if(i == NUMNODOS){
 			vector[columna] = true;
-			stp[fila][columna] = grafo[fila][columna];
-			stp[columna][fila] = grafo[fila][columna];
+			stp[fila+numNodos*columna] = grafo[fila+numNodos*columna];
+			stp[columna+numNodos*fila] = grafo[fila+numNodos*columna];
 			i = 0;
 			y++;
 			if (y == NUMNODOS - 1)
@@ -125,12 +133,12 @@ int stpPrim(int grafo[NUMNODOS][NUMNODOS]){
 	for (i = 0; i < NUMNODOS; ++i) {
 			for (j = 0; j < NUMNODOS; ++j) {
 
-				if(stp[i][j]==INT_MAX){
+				if(stp[i+numNodos*j]==INT_MAX){
 					printf("0,");
-					stp[i][j] = 0;
+					stp[i+numNodos*j] = 0;
 				}
 				else{
-					printf("%d,",stp[i][j]);
+					printf("%d,",stp[i+numNodos*j]);
 				}
 			}
 			printf("\n");
@@ -144,15 +152,16 @@ int readGrafo(int *grafo){
 
 	igraph_matrix_t gMatrix;
 	igraph_t g;
+	igraph_i_set_attribute_table(&igraph_cattribute_table);
 	FILE *ifile;
 	int i,j;
-	int numNodos;
-	ifile=fopen("/home/john/stp.gml", "r");
+	ifile=fopen("/home/john/git/primAlgorithm/grafo.gml", "r");
 	if (ifile==0) {
 		printf("Problema abriendo archivo de grafo\n");
 		return EXIT_FAILURE;
 	}
 	igraph_read_graph_gml(&g, ifile);
+
 	fclose(ifile);
 	numNodos = igraph_vcount(&g);
 	grafo = malloc(numNodos*numNodos*sizeof(int));
@@ -160,7 +169,21 @@ int readGrafo(int *grafo){
 
 	igraph_get_adjacency(&g,&gMatrix,IGRAPH_GET_ADJACENCY_BOTH,1);
 
-	for (i=0; i<numNodos; i++) for (j=0; j<numNodos; j++) grafo[i+numNodos*j] = MATRIX(gMatrix, i, j);
+	igraph_vector_t el;
+	long int ii, jj, n;
+	igraph_vector_init(&el, 0);
+	igraph_get_edgelist(&g, &el, 0);
+	n = igraph_ecount(&g);
+	char ch = igraph_is_directed(&g) ? '>' : '-';
+
+	memset(grafo,0,numNodos*numNodos*sizeof(int));
+
+	  for (ii=0, jj=0; ii<n; ii++, jj+=2) {
+	    printf("%ld --%c %ld: %ld\n",
+	      (long)VECTOR(el)[jj], ch, (long)VECTOR(el)[jj+1], (long)EAN(&g, "weight", ii));
+	    grafo[((long)VECTOR(el)[jj])+numNodos*((long)VECTOR(el)[jj+1])] = (int)EAN(&g, "weight", ii);
+	    grafo[((long)VECTOR(el)[jj+1])+numNodos*((long)VECTOR(el)[jj])] =  (int)EAN(&g, "weight", ii);
+	  }
 
 	for (i = 0; i < numNodos; ++i) {
 		for (j = 0; j < numNodos; ++j) {
@@ -170,6 +193,7 @@ int readGrafo(int *grafo){
 	}
 
 	printf("Numero de nodos %d",numNodos);
+	igraph_vector_destroy(&el);
 	return EXIT_SUCCESS;
 
 }
@@ -188,6 +212,7 @@ int main(void) {
 
 
 	readGrafo(grafo);
+	stpPrim(grafo);
 
 	//grafo = {0,3,1,6,INT_MAX,INT_MAX,3,0,5,INT_MAX,3,INT_MAX,1,5,0,5,6,4,6,INT_MAX,5,0,INT_MAX,2,INT_MAX,3,6,INT_MAX,0,6,INT_MAX,INT_MAX,4,2,6,0};
 
