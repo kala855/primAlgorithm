@@ -155,7 +155,7 @@ int* readGrafo(){
 	ifile=fopen("/home/john/Documents/celegansneural.gml"/*"/home/john/git/primAlgorithm/grafo.gml"*/, "r");
 	if (ifile==0) {
 		printf("Problema abriendo archivo de grafo\n");
-		return EXIT_FAILURE;
+		return NULL;
 	}
 	igraph_read_graph_gml(&g, ifile);
 
@@ -174,12 +174,12 @@ int* readGrafo(){
 
 	memset(grafo,INT_MAX2,numNodos*numNodos*sizeof(int));
 
-//	  for (ii=0, jj=0; ii<n; ii++, jj+=2) {
+	  for (ii=0, jj=0; ii<n; ii++, jj+=2) {
 //	    printf("%ld --%c %ld: %ld\n",
 //	      (long)VECTOR(el)[jj], ch, (long)VECTOR(el)[jj+1], (long)EAN(&g, "weight", ii));
-//	    grafo[((long)VECTOR(el)[jj])+numNodos*((long)VECTOR(el)[jj+1])] = (int)EAN(&g, "weight", ii);
-//	    grafo[((long)VECTOR(el)[jj+1])+numNodos*((long)VECTOR(el)[jj])] =  (int)EAN(&g, "weight", ii);
-//	  }
+	    grafo[((long)VECTOR(el)[jj])+numNodos*((long)VECTOR(el)[jj+1])] = (int)EAN(&g, "weight", ii);
+	    grafo[((long)VECTOR(el)[jj+1])+numNodos*((long)VECTOR(el)[jj])] =  (int)EAN(&g, "weight", ii);
+	  }
 
 	printf("\nNumero de nodos %d",numNodos);
 
@@ -190,9 +190,7 @@ int* readGrafo(){
 }
 
 int main(void) {
-
 	int *grafo;
-	//grafo = malloc(6*6*sizeof(int));
 	grafo = readGrafo();
 	stpPrim(grafo);
 	free(grafo);
