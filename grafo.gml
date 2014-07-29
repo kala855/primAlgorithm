@@ -31,13 +31,13 @@ graph
   [
     source 1
     target 0
-    weight 3
+    weight 18
   ]
   edge
   [
     source 2
     target 0
-    weight 1
+    weight 10
   ]
   edge
   [
@@ -55,7 +55,7 @@ graph
   [
     source 4
     target 1
-    weight 3
+    weight 15
   ]
   edge
   [

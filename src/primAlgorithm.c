@@ -151,8 +151,7 @@ int* readGrafo(){
 	igraph_t g;
 	igraph_i_set_attribute_table(&igraph_cattribute_table);
 	FILE *ifile;
-	int i,j;
-	ifile=fopen("/home/john/Documents/celegansneural.gml"/*"/home/john/git/primAlgorithm/grafo.gml"*/, "r");
+	ifile=fopen("/home/john/git/primAlgorithm/celegansneural.gml"/*"/home/john/git/primAlgorithm/grafo.gml"*/, "r");
 	if (ifile==0) {
 		printf("Problema abriendo archivo de grafo\n");
 		return NULL;
@@ -170,13 +169,10 @@ int* readGrafo(){
 	igraph_vector_init(&el, 0);
 	igraph_get_edgelist(&g, &el, 0);
 	n = igraph_ecount(&g);
-	char ch = igraph_is_directed(&g) ? '>' : '-';
 
 	memset(grafo,INT_MAX2,numNodos*numNodos*sizeof(int));
 
 	  for (ii=0, jj=0; ii<n; ii++, jj+=2) {
-//	    printf("%ld --%c %ld: %ld\n",
-//	      (long)VECTOR(el)[jj], ch, (long)VECTOR(el)[jj+1], (long)EAN(&g, "weight", ii));
 	    grafo[((long)VECTOR(el)[jj])+numNodos*((long)VECTOR(el)[jj+1])] = (int)EAN(&g, "weight", ii);
 	    grafo[((long)VECTOR(el)[jj+1])+numNodos*((long)VECTOR(el)[jj])] =  (int)EAN(&g, "weight", ii);
 	  }
